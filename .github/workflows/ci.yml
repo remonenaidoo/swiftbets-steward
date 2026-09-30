@@ -15,6 +15,6 @@ jobs:
     with:
       images: '[{"name": "swiftbets-steward", "dockerfile": "deploy/SwiftBets.Steward.Api.Dockerfile"}, {"name": "swiftbets-steward-migrator", "dockerfile": "deploy/SwiftBets.Steward.Migrator.Dockerfile"}]'
     permissions:
-      contents: write
+      contents: read
       packages: write
       security-events: write
