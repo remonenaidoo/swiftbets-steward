@@ -44,6 +44,20 @@ public sealed class StewardPostgresTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task Signal_soon_after_a_failed_diagnosis_folds_into_that_incident()
+    {
+        var incidents = new PostgresIncidentStore(await DataSourceAsync());
+        var first = Incident.Open(IncidentKind.WalletOutage, "wallet", "down", DateTimeOffset.UtcNow);
+        await incidents.OpenOrGetAsync(first, TestContext.Current.CancellationToken);
+        await incidents.SetStatusAsync(first.IncidentId, IncidentStatus.DiagnosisFailed, TestContext.Current.CancellationToken);
+
+        var (existing, created) = await incidents.OpenOrGetAsync(Incident.Open(IncidentKind.WalletOutage, "wallet", "still down", DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
+
+        created.ShouldBeFalse();
+        existing.IncidentId.ShouldBe(first.IncidentId);
+    }
+
+    [Fact]
     public async Task Signal_after_the_incident_is_resolved_opens_a_new_one()
     {
         var incidents = new PostgresIncidentStore(await DataSourceAsync());

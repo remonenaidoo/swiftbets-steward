@@ -14,9 +14,21 @@ public sealed class PostgresIncidentStore(NpgsqlDataSource dataSource) : IIncide
     private static readonly SqlResources Sql = SqlResources.For<PostgresIncidentStore>();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
+    private static readonly TimeSpan FailedCooldown = TimeSpan.FromMinutes(15);
+
     public async Task<(Incident Incident, bool Created)> OpenOrGetAsync(Incident incident, CancellationToken cancellationToken)
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellationToken);
+
+        // A condition that outlives its failed diagnosis (a wallet still down) keeps signalling; within the cooldown
+        // the signal folds into that incident instead of opening a new one every probe.
+        var recentFailure = await connection.QuerySingleOrDefaultAsync<IncidentRow>(new CommandDefinition(Sql.Get("Incident.FindRecentFailed"),
+            new { incident.Fingerprint, Since = incident.OpenedAt - FailedCooldown }, cancellationToken: cancellationToken));
+        if (recentFailure is not null)
+        {
+            return (recentFailure.ToDomain(), false);
+        }
+
         var created = await connection.QuerySingleOrDefaultAsync<Guid?>(new CommandDefinition(Sql.Get("Incident.Open"), new
         {
             incident.IncidentId, Kind = incident.Kind.ToString(), incident.Subject, incident.Summary, Status = incident.Status.ToString(), incident.Fingerprint, incident.OpenedAt,
