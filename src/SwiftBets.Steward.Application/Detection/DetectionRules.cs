@@ -1,0 +1,35 @@
+using System.Globalization;
+using SwiftBets.Steward.Application.Incidents;
+using SwiftBets.Steward.Application.Ports;
+using SwiftBets.Steward.Domain.Incidents;
+
+namespace SwiftBets.Steward.Application.Detection;
+
+/// <summary>Turns platform signals into incidents. Each rule is deterministic; the model is only involved after an incident exists.</summary>
+public sealed class DetectionRules(RaiseIncidentHandler raise, IEventLog events)
+{
+    /// <summary>Retry schedules per minute above which the wallet is treated as down.</summary>
+    public const double WalletOutageRetriesPerMinute = 5;
+
+    public Task OnStuckCouponAsync(Guid couponId, string reason, CancellationToken cancellationToken) =>
+        raise.RaiseAsync(IncidentKind.StuckCoupon, couponId.ToString(), $"Reconciler reported coupon {couponId} as stuck: {reason}", cancellationToken);
+
+    public Task OnDeadLetterAsync(string sourceTopic, string key, string reason, CancellationToken cancellationToken) =>
+        raise.RaiseAsync(IncidentKind.PoisonMessage, sourceTopic, $"A message with key {key} from {sourceTopic} was dead-lettered: {reason}", cancellationToken);
+
+    public async Task OnSettledAsync(Guid couponId, int version, Guid eventId, CancellationToken cancellationToken)
+    {
+        if (await events.SeenWithDifferentIdAsync("settlement.coupon-settled", couponId.ToString(), version.ToString(CultureInfo.InvariantCulture), eventId, cancellationToken))
+        {
+            await raise.RaiseAsync(IncidentKind.DuplicateSettlement, couponId.ToString(), $"Coupon {couponId} settlement v{version} was published more than once.", cancellationToken);
+        }
+    }
+
+    public async Task OnLadderRateAsync(double retriesPerMinute, CancellationToken cancellationToken)
+    {
+        if (retriesPerMinute >= WalletOutageRetriesPerMinute)
+        {
+            await raise.RaiseAsync(IncidentKind.WalletOutage, "wallet", $"Payout scheduled {retriesPerMinute:F0} wallet retries in the last minute.", cancellationToken);
+        }
+    }
+}

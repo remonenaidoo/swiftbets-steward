@@ -49,6 +49,16 @@ public sealed class HostTests : IClassFixture<HostTests.Factory>
         {
         builder.UseSetting("ConnectionStrings:SbSteward", "Host=127.0.0.1;Port=1;Database=x;Username=x;Password=x;Timeout=1");
         builder.UseSetting("Kafka:BootstrapServers", "127.0.0.1:1");
+            builder.UseSetting("Jwt:Authority", "https://identity.test");
+            builder.UseSetting("Steward:RunDetectors", "false");
+            builder.UseSetting("Steward:ModelProvider:Provider", "disabled");
+            builder.UseSetting("ServiceIdentity:TokenEndpoint", "http://127.0.0.1:1/auth/token");
+            builder.UseSetting("ServiceIdentity:ClientSecret", "unused");
+            builder.UseSetting("Platform:SettlementAddress", "http://127.0.0.1:1");
+            builder.UseSetting("Platform:PayoutAddress", "http://127.0.0.1:1");
+            builder.UseSetting("Platform:OfferAddress", "http://127.0.0.1:1");
+            builder.UseSetting("Platform:WalletAddress", "http://127.0.0.1:1");
+            builder.UseSetting("Platform:PrometheusAddress", "http://127.0.0.1:1");
         }
     }
 }

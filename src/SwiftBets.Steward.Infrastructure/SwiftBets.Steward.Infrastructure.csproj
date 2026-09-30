@@ -3,9 +3,18 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SwiftBets.BuildingBlocks.Core" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="SwiftBets.BuildingBlocks.Persistence" />
     <PackageReference Include="SwiftBets.BuildingBlocks.Messaging" />
+    <PackageReference Include="SwiftBets.BuildingBlocks.Web" />
+    <PackageReference Include="SwiftBets.BuildingBlocks.Resilience" />
+    <PackageReference Include="Anthropic" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="System.IO.Hashing" />
     <ProjectReference Include="../SwiftBets.Steward.Application/SwiftBets.Steward.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Sql/*.sql" />
+    <EmbeddedResource Include="../../runbooks/*.md" LogicalName="runbooks/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
