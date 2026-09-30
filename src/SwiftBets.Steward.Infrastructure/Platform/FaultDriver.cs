@@ -28,7 +28,7 @@ public sealed class FaultDriver(IHttpClientFactory clients, IEventPublisher publ
             case StuckCoupon:
                 return await ArmAsync(HttpPlatformInspector.Settlement, "settlement.settler.drop", 3, cancellationToken);
             case WalletOutage:
-                return await ArmAsync("wallet", "wallet.unavailable", 400, cancellationToken);
+                return await ArmAsync("wallet", "wallet.unavailable", 3000, cancellationToken);
             case PoisonMessage:
                 var topic = TopicName.For(Topics.ResultPublished, kafka.Value.Environment).Value;
                 await publisher.PublishRawAsync(new OutgoingMessage(topic, $"poison-{Guid.NewGuid():N}"[..20], Encoding.UTF8.GetBytes("{\"result\": \"this is not an envelope\""), new Dictionary<string, string>()), cancellationToken);

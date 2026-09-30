@@ -2,9 +2,10 @@
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
 ARG TARGETARCH
 WORKDIR /src
-COPY global.json nuget.config Directory.Build.props Directory.Packages.props ./
+COPY global.json nuget.config Directory.Build.props Directory.Packages.props .editorconfig ./
 COPY .packages/ .packages/
 COPY src/ src/
+COPY runbooks/ runbooks/
 RUN dotnet restore src/SwiftBets.Steward.Api/SwiftBets.Steward.Api.csproj -a $TARGETARCH
 RUN dotnet publish src/SwiftBets.Steward.Api/SwiftBets.Steward.Api.csproj -c Release -a $TARGETARCH --no-restore --self-contained false -o /app -p:UseAppHost=false
 

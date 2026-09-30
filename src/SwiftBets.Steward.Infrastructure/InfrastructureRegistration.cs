@@ -49,8 +49,8 @@ public static class InfrastructureRegistration
 
         if (configuration.GetValue("Steward:RunDetectors", true))
         {
-            services.AddKafkaConsumer<StuckCouponV1, StuckCouponObserver>(Topics.StuckCoupon, "swiftbets.steward.stuck");
-            services.AddKafkaConsumer<CouponSettledV1, CouponSettledObserver>(Topics.CouponSettled, "swiftbets.steward.settled");
+            services.AddKafkaConsumer<StuckCouponV1, StuckCouponObserver>(Topics.StuckCoupon, "swiftbets.steward.stuck", startAtLatest: true);
+            services.AddKafkaConsumer<CouponSettledV1, CouponSettledObserver>(Topics.CouponSettled, "swiftbets.steward.settled", startAtLatest: true);
             AddLog<ResultPublishedV1>(services, Topics.ResultPublished, r => r.FixtureId);
             AddLog<PayoutCompletedV1>(services, Topics.PayoutCompleted, p => p.CouponId.ToString());
             AddLog<PayoutAttemptV1>(services, Topics.PayoutDeadLetter, p => p.CouponId.ToString());
@@ -68,7 +68,7 @@ public static class InfrastructureRegistration
     {
         services.AddScoped<IEventHandler<T>>(sp => new EventLogObserver<T>(sp.GetRequiredService<PostgresEventLog>(), key, topic));
         services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => new KafkaConsumerHost<T>(
-            new ConsumerRegistration(topic, $"swiftbets.steward.log.{topic}"),
+            new ConsumerRegistration(topic, $"swiftbets.steward.log.{topic}", StartAtLatest: true),
             sp.GetRequiredService<IServiceScopeFactory>(),
             sp.GetRequiredService<IEventPublisher>(),
             sp.GetRequiredService<IOptions<KafkaOptions>>(),

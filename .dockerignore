@@ -6,3 +6,4 @@ tests/
 .github/
 **/*.md
 !.packages/*.nupkg
+!runbooks/*.md
