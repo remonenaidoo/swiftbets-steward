@@ -35,7 +35,10 @@ public static class InfrastructureRegistration
 
         services.AddSingleton<PostgresEventLog>();
         services.AddSingleton<IEventLog>(sp => sp.GetRequiredService<PostgresEventLog>());
-        services.AddSingleton<IIncidentStore, PostgresIncidentStore>();
+        services.AddSingleton<PostgresIncidentStore>();
+        services.AddSingleton<IIncidentStore>(sp => new NotifyingIncidentStore(
+            sp.GetRequiredService<PostgresIncidentStore>(), sp.GetRequiredService<IEventPublisher>(), sp.GetRequiredService<TimeProvider>(),
+            sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<NotifyingIncidentStore>>()));
         services.AddSingleton<ISpendLedger, PostgresSpendLedger>();
         services.AddSingleton<DiagnosisQueue>();
         services.AddSingleton<IDiagnosisQueue>(sp => sp.GetRequiredService<DiagnosisQueue>());
