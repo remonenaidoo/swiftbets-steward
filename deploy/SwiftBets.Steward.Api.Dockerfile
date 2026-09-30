@@ -6,6 +6,7 @@ COPY global.json nuget.config Directory.Build.props Directory.Packages.props .ed
 COPY .packages/ .packages/
 COPY src/ src/
 COPY runbooks/ runbooks/
+COPY transcripts/ transcripts/
 RUN dotnet restore src/SwiftBets.Steward.Api/SwiftBets.Steward.Api.csproj -a $TARGETARCH
 RUN dotnet publish src/SwiftBets.Steward.Api/SwiftBets.Steward.Api.csproj -c Release -a $TARGETARCH --no-restore --self-contained false -o /app -p:UseAppHost=false
 

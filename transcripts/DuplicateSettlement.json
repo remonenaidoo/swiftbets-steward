@@ -1,0 +1,59 @@
+{
+  "scenario": "DuplicateSettlement",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_coupon_state",
+          "inputJson": "{\"coupon_id\": \"{{subject}}\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"duplicate settlement published twice\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"Settlement published twice\", \"severity\": \"medium\", \"root_cause\": \"The same settlement version was re-published under a new event id.\", \"hypothesis\": \"Payout is idempotent per settlement version, so nothing was paid twice.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"The coupon's payout state was read.\", \"excerpt\": \"\\\"couponId\\\":\\\"{{subject}}\\\"\"}], \"runbook_citations\": [{\"runbook_id\": \"duplicate-settlement\", \"section\": \"Diagnosis\"}], \"proposed_actions\": [{\"type\": \"no_action\", \"target\": \"{{subject}}\", \"rationale\": \"Payout deduplicated the delta.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}

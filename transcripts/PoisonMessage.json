@@ -1,0 +1,59 @@
+{
+  "scenario": "PoisonMessage",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_service_metrics",
+          "inputJson": "{\"metric\": \"dead_letters_last_10_minutes\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"poison message dead letter malformed\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"Malformed message parked on the dead-letter queue\", \"severity\": \"low\", \"root_cause\": \"A malformed message could not be deserialised and was dead-lettered.\", \"hypothesis\": \"The partition kept flowing; the message needs no replay.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"Dead letters were counted.\", \"excerpt\": \"\\\"metric\\\":\\\"dead_letters_last_10_minutes\\\"\"}], \"runbook_citations\": [{\"runbook_id\": \"poison-message\", \"section\": \"Diagnosis\"}], \"proposed_actions\": [{\"type\": \"no_action\", \"target\": \"{{subject}}\", \"rationale\": \"Malformed input cannot be replayed.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}

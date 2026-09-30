@@ -15,4 +15,7 @@
     <Using Include="Xunit" />
     <Using Include="Shouldly" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="../../transcripts/*.json" LinkBase="transcripts" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

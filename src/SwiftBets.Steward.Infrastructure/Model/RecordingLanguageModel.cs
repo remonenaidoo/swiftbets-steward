@@ -8,7 +8,7 @@ namespace SwiftBets.Steward.Infrastructure.Model;
 /// <summary>Wraps a live model and writes each scenario's turns to disk, producing the transcripts the replay model plays.</summary>
 public sealed class RecordingLanguageModel(ILanguageModel inner, string directory) : ILanguageModel
 {
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
     private readonly ConcurrentDictionary<string, List<ModelTurn>> _turns = new(StringComparer.Ordinal);
 
     public async Task<ModelTurn> CompleteAsync(ModelRequest request, CancellationToken cancellationToken)

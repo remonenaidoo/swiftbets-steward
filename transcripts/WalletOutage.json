@@ -1,0 +1,59 @@
+{
+  "scenario": "WalletOutage",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_service_metrics",
+          "inputJson": "{\"metric\": \"payout_retries_last_minute\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"wallet outage payouts retrying\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"Wallet refusing payout credits\", \"severity\": \"high\", \"root_cause\": \"The wallet is unavailable, so payouts are climbing the retry ladder.\", \"hypothesis\": \"The ladder drains on its own once the wallet recovers; no manual action is needed.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"Payout retries are being scheduled.\", \"excerpt\": \"\\\"metric\\\":\\\"payout_retries_last_minute\\\"\"}], \"runbook_citations\": [{\"runbook_id\": \"wallet-outage\", \"section\": \"Diagnosis\"}], \"proposed_actions\": [{\"type\": \"no_action\", \"target\": \"wallet\", \"rationale\": \"Let the retry ladder drain after recovery.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}

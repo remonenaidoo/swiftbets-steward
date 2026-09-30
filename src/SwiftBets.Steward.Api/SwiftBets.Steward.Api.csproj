@@ -6,4 +6,7 @@
     <PackageReference Include="SwiftBets.BuildingBlocks.Web" />
     <ProjectReference Include="../SwiftBets.Steward.Infrastructure/SwiftBets.Steward.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="../../transcripts/*.json" LinkBase="transcripts" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,59 @@
+{
+  "scenario": "StuckCoupon",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_coupon_state",
+          "inputJson": "{\"coupon_id\": \"{{subject}}\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"stuck coupon evaluated but never settled\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"Coupon evaluated but never settled\", \"severity\": \"medium\", \"root_cause\": \"The settler dropped the settlement after every leg was evaluated, so the coupon never reached settled.\", \"hypothesis\": \"SQL holds the leg evaluations; a refresh rebuilds progress and settles it.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"The coupon state was read for the stuck coupon.\", \"excerpt\": \"\\\"couponId\\\":\\\"{{subject}}\\\"\"}], \"runbook_citations\": [{\"runbook_id\": \"stuck-coupon\", \"section\": \"Diagnosis\"}], \"proposed_actions\": [{\"type\": \"refresh_coupon\", \"target\": \"{{subject}}\", \"rationale\": \"Rebuild settlement progress from SQL and settle idempotently.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}
