@@ -28,7 +28,7 @@ public sealed class FaultDriver(IHttpClientFactory clients, IEventPublisher publ
             case StuckCoupon:
                 return await ArmAsync(HttpPlatformInspector.Settlement, "settlement.settler.drop", 3, cancellationToken);
             case WalletOutage:
-                return await ArmAsync("wallet", "wallet.unavailable", 3000, cancellationToken);
+                return await ArmForAsync("wallet", "wallet.unavailable", TimeSpan.FromSeconds(90), cancellationToken);
             case PoisonMessage:
                 var topic = TopicName.For(Topics.ResultPublished, kafka.Value.Environment).Value;
                 await publisher.PublishRawAsync(new OutgoingMessage(topic, $"poison-{Guid.NewGuid():N}"[..20], Encoding.UTF8.GetBytes("{\"result\": \"this is not an envelope\""), new Dictionary<string, string>()), cancellationToken);
@@ -46,6 +46,13 @@ public sealed class FaultDriver(IHttpClientFactory clients, IEventPublisher publ
             default:
                 throw new ArgumentOutOfRangeException(nameof(fault), fault, "Unknown fault.");
         }
+    }
+
+    private async Task<string> ArmForAsync(string client, string point, TimeSpan duration, CancellationToken cancellationToken)
+    {
+        using var response = await clients.CreateClient(client).PostAsync(new Uri($"faults/{point}?seconds={(int)duration.TotalSeconds}", UriKind.Relative), null, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        return $"armed {point} on {client} for {(int)duration.TotalSeconds} seconds";
     }
 
     private async Task<string> ArmAsync(string client, string point, int times, CancellationToken cancellationToken)
