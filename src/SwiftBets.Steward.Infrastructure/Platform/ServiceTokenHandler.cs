@@ -8,7 +8,15 @@ public sealed class ServiceTokenHandler(ClientCredentialsTokenProvider tokens) :
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await tokens.GetTokenAsync(cancellationToken));
-        return await base.SendAsync(request, cancellationToken);
+        var token = await tokens.GetTokenAsync(cancellationToken);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var response = await base.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            // The issuer restarted or rotated its key; the next call fetches a fresh token.
+            tokens.Invalidate(token);
+        }
+
+        return response;
     }
 }
