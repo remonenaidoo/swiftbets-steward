@@ -12,7 +12,8 @@ using SwiftBets.Steward.Domain.Reports;
 namespace SwiftBets.Steward.Infrastructure.Persistence;
 
 /// <summary>
-/// Publishes incident and remediation changes after they are stored, for the dashboard's live view. These are
+/// Publishes incident and remediation changes after they are stored, for the dashboard's live view, and counts
+/// them for the Steward Grafana dashboard. These are
 /// notifications, not the record: the dashboard re-reads the incident over HTTP, so a lost publish costs freshness,
 /// never correctness, and a publish failure never fails the change it describes.
 /// </summary>
@@ -24,6 +25,7 @@ public sealed partial class NotifyingIncidentStore(IIncidentStore inner, IEventP
         if (result.Created)
         {
             var opened = result.Incident;
+            StewardMetrics.IncidentsRaised.WithLabels(Wire(opened.Kind)).Inc();
             await PublishAsync(Topics.IncidentRaised, opened.IncidentId, new IncidentRaisedV1(opened.IncidentId, Wire(opened.Kind), opened.Subject, opened.Summary, opened.OpenedAt));
         }
 
@@ -39,12 +41,22 @@ public sealed partial class NotifyingIncidentStore(IIncidentStore inner, IEventP
     public async Task SaveReportAsync(Guid incidentId, IncidentReport? report, IReadOnlyList<string> problems, IReadOnlyList<RemediationAction> actions, IncidentStatus status, CancellationToken cancellationToken)
     {
         await inner.SaveReportAsync(incidentId, report, problems, actions, status, cancellationToken);
+        if (await inner.GetAsync(incidentId, cancellationToken) is { } details)
+        {
+            StewardMetrics.Diagnoses.WithLabels(Wire(details.Incident.Kind), Wire(status)).Inc();
+        }
+
         await PublishUpdatedAsync(incidentId, cancellationToken);
     }
 
     public async Task<bool> UpdateActionAsync(RemediationAction action, ActionStatus expected, CancellationToken cancellationToken)
     {
         var updated = await inner.UpdateActionAsync(action, expected, cancellationToken);
+        if (updated)
+        {
+            StewardMetrics.Remediations.WithLabels(Wire(action.Type), Wire(action.Status)).Inc();
+        }
+
         if (updated && action.Status is ActionStatus.Executed or ActionStatus.Failed)
         {
             await PublishAsync(Topics.RemediationExecuted, action.IncidentId, new RemediationExecutedV1(

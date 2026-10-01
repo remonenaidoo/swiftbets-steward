@@ -23,5 +23,11 @@ public sealed class PostgresSpendLedger(NpgsqlDataSource dataSource) : ISpendLed
         {
             IncidentId = incidentId, Model = model, usage.InputTokens, usage.OutputTokens, usage.CacheReadTokens, usage.CacheWriteTokens, CostUsd = costUsd,
         }, cancellationToken: cancellationToken));
+
+        StewardMetrics.ModelCostUsd.WithLabels(model).Inc((double)costUsd);
+        StewardMetrics.ModelTokens.WithLabels(model, "input").Inc(usage.InputTokens);
+        StewardMetrics.ModelTokens.WithLabels(model, "output").Inc(usage.OutputTokens);
+        StewardMetrics.ModelTokens.WithLabels(model, "cache_read").Inc(usage.CacheReadTokens);
+        StewardMetrics.ModelTokens.WithLabels(model, "cache_write").Inc(usage.CacheWriteTokens);
     }
 }
