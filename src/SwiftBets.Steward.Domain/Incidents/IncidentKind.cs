@@ -6,4 +6,5 @@ public enum IncidentKind
     WalletOutage,
     PoisonMessage,
     DuplicateSettlement,
+    PaymentDrift,
 }
