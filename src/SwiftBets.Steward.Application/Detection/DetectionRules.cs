@@ -25,6 +25,11 @@ public sealed class DetectionRules(RaiseIncidentHandler raise, IEventLog events)
         }
     }
 
+    /// <summary>One incident per provider and day: a rerun that finds the same drift joins the open incident.</summary>
+    public Task OnPaymentDriftAsync(string provider, DateOnly day, int driftCount, string netDifference, string summary, CancellationToken cancellationToken) =>
+        raise.RaiseAsync(IncidentKind.PaymentDrift, $"{provider}:{day:yyyy-MM-dd}",
+            $"Payments reconciliation for {provider} on {day:yyyy-MM-dd} found {driftCount} drift(s), net {netDifference}: {summary}", cancellationToken);
+
     public async Task OnLadderRateAsync(double retriesPerMinute, CancellationToken cancellationToken)
     {
         if (retriesPerMinute >= WalletOutageRetriesPerMinute)

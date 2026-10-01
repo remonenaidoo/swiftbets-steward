@@ -10,6 +10,7 @@ using SwiftBets.BuildingBlocks.Resilience;
 using SwiftBets.BuildingBlocks.Web;
 using SwiftBets.Contracts.Messaging;
 using SwiftBets.Contracts.Offer;
+using SwiftBets.Contracts.Payments;
 using SwiftBets.Contracts.Payout;
 using SwiftBets.Contracts.Settlement;
 using SwiftBets.Steward.Application.Agent;
@@ -54,6 +55,7 @@ public static class InfrastructureRegistration
         {
             services.AddKafkaConsumer<StuckCouponV1, StuckCouponObserver>(Topics.StuckCoupon, "swiftbets.steward.stuck", startAtLatest: true);
             services.AddKafkaConsumer<CouponSettledV1, CouponSettledObserver>(Topics.CouponSettled, "swiftbets.steward.settled", startAtLatest: true);
+            services.AddKafkaConsumer<PaymentDriftDetectedV1, PaymentDriftObserver>(Topics.PaymentDriftDetected, "swiftbets.steward.payment-drift", startAtLatest: true);
             AddLog<ResultPublishedV1>(services, Topics.ResultPublished, r => r.FixtureId);
             AddLog<PayoutCompletedV1>(services, Topics.PayoutCompleted, p => p.CouponId.ToString());
             AddLog<PayoutAttemptV1>(services, Topics.PayoutDeadLetter, p => p.CouponId.ToString());
