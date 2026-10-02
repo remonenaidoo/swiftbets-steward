@@ -19,7 +19,7 @@ namespace SwiftBets.Steward.Infrastructure.Messaging;
 /// </summary>
 public sealed partial class DeadLetterWatcher(IServiceScopeFactory scopes, IOptions<KafkaOptions> kafka, ILogger<DeadLetterWatcher> logger) : BackgroundService
 {
-    private static readonly string[] Watched = [Topics.ResultPublished, Topics.CouponPlaced, Topics.LegEvaluated, Topics.CouponSettled];
+    private static readonly string[] Watched = [Topics.ResultPublished, Topics.CouponPlaced, Topics.LegEvaluated, Topics.CouponSettled, Topics.CouponSettledV2];
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken) =>
         Task.Factory.StartNew(() => RunAsync(stoppingToken), stoppingToken, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();

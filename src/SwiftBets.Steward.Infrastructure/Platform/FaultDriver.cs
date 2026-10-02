@@ -34,14 +34,14 @@ public sealed class FaultDriver(IHttpClientFactory clients, IEventPublisher publ
                 await publisher.PublishRawAsync(new OutgoingMessage(topic, $"poison-{Guid.NewGuid():N}"[..20], Encoding.UTF8.GetBytes("{\"result\": \"this is not an envelope\""), new Dictionary<string, string>()), cancellationToken);
                 return $"published a malformed message to {topic}";
             case DuplicateSettlement:
-                var settled = (await events.RecentAsync(Topics.CouponSettled, 20, cancellationToken)).FirstOrDefault(e => e.EventType == CouponSettledV1.EventType);
+                var settled = (await events.RecentAsync(Topics.CouponSettledV2, 20, cancellationToken)).FirstOrDefault(e => e.EventType == CouponSettledV2.EventType);
                 if (settled is null)
                 {
                     return "no recent settlement to duplicate yet; place some bets and retry";
                 }
 
-                var payload = JsonSerializer.Deserialize<CouponSettledV1>(settled.PayloadJson, SwiftBets.Contracts.Serialization.ContractJson.Options)!;
-                await publisher.PublishAsync(Topics.CouponSettled, payload.CouponId.ToString(), EventEnvelope<CouponSettledV1>.Create(payload, time.GetUtcNow(), $"drill-{Guid.NewGuid():N}"), cancellationToken);
+                var payload = JsonSerializer.Deserialize<CouponSettledV2>(settled.PayloadJson, SwiftBets.Contracts.Serialization.ContractJson.Options)!;
+                await publisher.PublishAsync(Topics.CouponSettledV2, payload.CouponId.ToString(), EventEnvelope<CouponSettledV2>.Create(payload, time.GetUtcNow(), $"drill-{Guid.NewGuid():N}"), cancellationToken);
                 return $"re-published settlement v{payload.SettlementVersion} of coupon {payload.CouponId} with a new event id";
             default:
                 throw new ArgumentOutOfRangeException(nameof(fault), fault, "Unknown fault.");
