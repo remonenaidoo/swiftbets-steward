@@ -18,4 +18,7 @@
   <ItemGroup>
     <Content Include="../../transcripts/*.json" LinkBase="transcripts" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="retrieval-eval.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

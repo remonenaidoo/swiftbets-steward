@@ -68,6 +68,29 @@ public sealed class StewardPostgresTests(PostgresFixture postgres)
         (await incidents.OpenOrGetAsync(Incident.Open(IncidentKind.WalletOutage, "wallet", "down again", DateTimeOffset.UtcNow), TestContext.Current.CancellationToken)).Created.ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task Retrieval_finds_the_right_runbook_in_the_top_three_for_at_least_nine_questions_in_ten()
+    {
+        var store = await RunbooksAsync();
+        var cases = System.Text.Json.JsonSerializer.Deserialize<List<EvalCase>>(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "retrieval-eval.json"), TestContext.Current.CancellationToken), EvalJson)!;
+        var misses = new List<string>();
+        foreach (var c in cases)
+        {
+            var hits = await store.SearchAsync(c.Query, 3, TestContext.Current.CancellationToken);
+            if (!hits.Any(h => h.RunbookId == c.Expected))
+            {
+                misses.Add($"{c.Query} -> wanted {c.Expected}, got [{string.Join(", ", hits.Select(h => h.RunbookId))}]");
+            }
+        }
+
+        var hitRate = 1.0 - ((double)misses.Count / cases.Count);
+        hitRate.ShouldBeGreaterThanOrEqualTo(0.9, $"hit@3 {hitRate:P0} over {cases.Count} questions; misses:\n{string.Join("\n", misses)}");
+    }
+
+    private static readonly System.Text.Json.JsonSerializerOptions EvalJson = new(System.Text.Json.JsonSerializerDefaults.Web);
+
+    private sealed record EvalCase(string Query, string Expected);
+
     private async Task<PgvectorRunbookStore> RunbooksAsync()
     {
         var store = new PgvectorRunbookStore(await DataSourceAsync(), new HashingEmbeddingGenerator(), minimumSimilarity: 0.99);

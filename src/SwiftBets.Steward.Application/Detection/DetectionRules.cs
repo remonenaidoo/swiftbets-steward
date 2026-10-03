@@ -37,4 +37,20 @@ public sealed class DetectionRules(RaiseIncidentHandler raise, IEventLog events)
             await raise.RaiseAsync(IncidentKind.WalletOutage, "wallet", $"Payout scheduled {retriesPerMinute:F0} wallet retries in the last minute.", cancellationToken);
         }
     }
+
+    /// <summary>A firing Prometheus alert; false when no rule knows it, so the webhook can say so.</summary>
+    public async Task<bool> OnAlertAsync(string alertName, IReadOnlyDictionary<string, string> labels, string summary, CancellationToken cancellationToken)
+    {
+        if (AlertRules.Resolve(alertName, labels) is not { } rule)
+        {
+            return false;
+        }
+
+        await raise.RaiseAsync(rule.Kind, rule.Subject, $"Alert {alertName}: {summary}", cancellationToken);
+        return true;
+    }
+
+    /// <summary>The casino's daily reconciliation with a provider found transactions one side has and the other does not.</summary>
+    public Task OnProviderDriftAsync(string providerId, DateOnly day, string summary, CancellationToken cancellationToken) =>
+        raise.RaiseAsync(IncidentKind.ProviderDrift, $"{providerId}:{day:yyyy-MM-dd}", summary, cancellationToken);
 }

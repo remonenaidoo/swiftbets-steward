@@ -125,6 +125,15 @@ public sealed partial class DiagnosisAgent(
                     return hits.Count == 0
                         ? """{"results":[],"note":"no runbook is relevant enough; say so rather than guessing"}"""
                         : JsonSerializer.Serialize(new { results = hits.Select(h => new { runbook_id = h.RunbookId, h.Title, matched_sections = h.MatchedSections, sections = h.AllSections, markdown = h.Markdown }) }, Json);
+                case ToolCatalog.LedgerReconciliation:
+                    return await platform.LedgerReconciliationAsync(cancellationToken);
+                case ToolCatalog.ProviderReconciliation:
+                    return await platform.ProviderReconciliationAsync(root.GetProperty("provider_id").GetString()!, cancellationToken);
+                case ToolCatalog.CustomerImpact:
+                    var subject = root.GetProperty("subject").GetString()!;
+                    var recent = await events.RecentAsync(subject, 50, cancellationToken);
+                    var customers = recent.SelectMany(e => CustomerIds(e.PayloadJson)).Distinct().Count();
+                    return JsonSerializer.Serialize(new { subject, events_examined = recent.Count, customers_affected = customers }, Json);
                 default:
                     return JsonSerializer.Serialize(new { error = $"unknown tool {name}" }, Json);
             }
@@ -133,6 +142,40 @@ public sealed partial class DiagnosisAgent(
         {
             LogToolFailed(ex, name);
             return JsonSerializer.Serialize(new { error = $"{name} failed: {ex.Message}" }, Json);
+        }
+    }
+
+    /// <summary>Customer ids in an event payload, wherever the producer names them (punterId, userId).</summary>
+    private static List<string> CustomerIds(string payloadJson)
+    {
+        using var document = JsonDocument.Parse(payloadJson);
+        var found = new List<string>();
+        Walk(document.RootElement, found);
+        return found;
+
+        static void Walk(JsonElement element, List<string> found)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in element.EnumerateObject())
+                {
+                    if (property.Name is "punterId" or "userId" or "PunterId" or "UserId" && property.Value.ValueKind == JsonValueKind.String)
+                    {
+                        found.Add(property.Value.GetString()!);
+                    }
+                    else
+                    {
+                        Walk(property.Value, found);
+                    }
+                }
+            }
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in element.EnumerateArray())
+                {
+                    Walk(item, found);
+                }
+            }
         }
     }
 

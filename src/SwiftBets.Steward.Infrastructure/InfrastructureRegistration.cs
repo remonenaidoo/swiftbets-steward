@@ -8,6 +8,7 @@ using SwiftBets.BuildingBlocks.Messaging;
 using SwiftBets.BuildingBlocks.Persistence;
 using SwiftBets.BuildingBlocks.Resilience;
 using SwiftBets.BuildingBlocks.Web;
+using SwiftBets.Contracts.Casino;
 using SwiftBets.Contracts.Messaging;
 using SwiftBets.Contracts.Offer;
 using SwiftBets.Contracts.Payments;
@@ -56,6 +57,7 @@ public static class InfrastructureRegistration
             services.AddKafkaConsumer<StuckCouponV1, StuckCouponObserver>(Topics.StuckCoupon, "swiftbets.steward.stuck", startAtLatest: true);
             services.AddKafkaConsumer<CouponSettledV2, CouponSettledObserver>(Topics.CouponSettledV2, "swiftbets.steward.settled-v2", startAtLatest: true);
             services.AddKafkaConsumer<PaymentDriftDetectedV1, PaymentDriftObserver>(Topics.PaymentDriftDetected, "swiftbets.steward.payment-drift", startAtLatest: true);
+            services.AddKafkaConsumer<ProviderReconciliationV1, ProviderDriftObserver>(Topics.ProviderReconciliation, "swiftbets.steward.provider-drift", startAtLatest: true);
             AddLog<ResultPublishedV1>(services, Topics.ResultPublished, r => r.FixtureId);
             AddLog<PayoutCompletedV1>(services, Topics.PayoutCompleted, p => p.CouponId.ToString());
             AddLog<PayoutAttemptV1>(services, Topics.PayoutDeadLetter, p => p.CouponId.ToString());
@@ -115,7 +117,9 @@ public static class InfrastructureRegistration
                 "disabled" => new DisabledLanguageModel(),
                 _ => throw new InvalidOperationException($"Unknown Steward:ModelProvider:Provider '{provider}'."),
             };
-            return configuration["Steward:ModelProvider:RecordDirectory"] is { Length: > 0 } record ? new RecordingLanguageModel(model, record) : model;
+            // Scrubbing sits outermost, so neither the provider nor a recorded transcript ever sees personal data.
+            var recorded = configuration["Steward:ModelProvider:RecordDirectory"] is { Length: > 0 } record ? new RecordingLanguageModel(model, record) : model;
+            return new ScrubbingLanguageModel(recorded);
         });
     }
 
@@ -136,6 +140,9 @@ public static class InfrastructureRegistration
         Add(HttpPlatformInspector.Payout, o => o.PayoutAddress);
         Add("offer", o => o.OfferAddress);
         Add("wallet", o => o.WalletAddress);
+        Add(HttpPlatformInspector.Casino, o => o.CasinoAddress);
+        Add(HttpPlatformInspector.Payments, o => o.PaymentsAddress);
+        Add(HttpPlatformInspector.Config, o => o.ConfigAddress);
         services.AddHttpClient(HttpPlatformInspector.Prometheus, (sp, http) => http.BaseAddress = new Uri(sp.GetRequiredService<IOptions<PlatformOptions>>().Value.PrometheusAddress.TrimEnd('/') + "/"))
             .AddIdempotentResilience();
     }

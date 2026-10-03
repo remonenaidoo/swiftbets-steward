@@ -1,0 +1,77 @@
+{
+  "scenario": "LedgerDrift",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_ledger_reconciliation",
+          "inputJson": "{}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "get_service_metrics",
+          "inputJson": "{\"metric\": \"wallet_ledger_drifts\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"wallet ledger drift balance does not match the ledger\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_04",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"Wallet balances disagree with the ledger\", \"severity\": \"critical\", \"root_cause\": \"A balance projection no longer matches the sum of its ledger entries.\", \"hypothesis\": \"Stopping new bets keeps stakes and payouts off a balance that may be wrong while a person decides which side is right.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"The last ledger reconciliation was not clean.\", \"excerpt\": \"\\\"isClean\\\":false\"}, {\"tool_call_id\": \"toolu_02\", \"claim\": \"The drift metric is above zero.\", \"excerpt\": \"\\\"value\\\":\\\"1\\\"\"}], \"runbook_citations\": [{\"runbook_id\": \"ledger-drift\", \"section\": \"Remediation\"}], \"proposed_actions\": [{\"type\": \"engage_kill_switch\", \"target\": \"placement\", \"rationale\": \"As the runbook's remediation directs.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}

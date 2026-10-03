@@ -23,6 +23,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapSwiftBetsOperationalEndpoints();
 app.MapStewardEndpoints();
+app.MapAlertWebhook();
 
 await app.RunAsync();
 return 0;

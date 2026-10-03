@@ -1,0 +1,77 @@
+{
+  "scenario": "ProviderDrift",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_provider_reconciliation",
+          "inputJson": "{\"provider_id\": \"sim-seamless\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "get_customer_impact",
+          "inputJson": "{\"subject\": \"{{subject}}\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"casino provider reconciliation drift missing on our side\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_04",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"The game provider and our ledger disagree\", \"severity\": \"high\", \"root_cause\": \"Transactions are missing on one side of the provider's report.\", \"hypothesis\": \"Finance settles it with the provider; nothing is automated.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"The provider's daily reconciliation reports drift.\", \"excerpt\": \"\\\"status\\\":\\\"drift\\\"\"}, {\"tool_call_id\": \"toolu_02\", \"claim\": \"Customers played with the provider.\", \"excerpt\": \"\\\"customers_affected\\\":2\"}], \"runbook_citations\": [{\"runbook_id\": \"provider-drift\", \"section\": \"Remediation\"}], \"proposed_actions\": [{\"type\": \"no_action\", \"target\": \"{{subject}}\", \"rationale\": \"As the runbook's remediation directs.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}

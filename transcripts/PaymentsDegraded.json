@@ -1,0 +1,77 @@
+{
+  "scenario": "PaymentsDegraded",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_service_metrics",
+          "inputJson": "{\"metric\": \"payments_webhooks_rejected_last_15m\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "get_customer_impact",
+          "inputJson": "{\"subject\": \"{{subject}}\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"payment webhooks rejected sweep failing open payments\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_04",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"Payment webhooks are being refused\", \"severity\": \"medium\", \"root_cause\": \"The provider's webhooks fail verification, so outcomes are not applied.\", \"hypothesis\": \"Once the cause is fixed, asking the provider about every open payment applies each outcome once.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"Webhooks are being refused.\", \"excerpt\": \"\\\"value\\\":\\\"1\\\"\"}, {\"tool_call_id\": \"toolu_02\", \"claim\": \"Customers are waiting on payments.\", \"excerpt\": \"\\\"customers_affected\\\":2\"}], \"runbook_citations\": [{\"runbook_id\": \"payments-degraded\", \"section\": \"Remediation\"}], \"proposed_actions\": [{\"type\": \"replay_payment_webhooks\", \"target\": \"{{subject}}\", \"rationale\": \"As the runbook's remediation directs.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}

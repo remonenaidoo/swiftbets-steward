@@ -9,6 +9,10 @@ public sealed class HttpPlatformInspector(IHttpClientFactory clients) : IPlatfor
     public const string Settlement = "settlement";
     public const string Payout = "payout";
     public const string Prometheus = "prometheus";
+    public const string Wallet = "wallet";
+    public const string Casino = "casino";
+    public const string Payments = "payments";
+    public const string Config = "config";
 
     public IReadOnlyList<string> Metrics => [.. MetricCatalog.Queries.Keys];
 
@@ -38,6 +42,12 @@ public sealed class HttpPlatformInspector(IHttpClientFactory clients) : IPlatfor
             .ToList();
         return JsonSerializer.Serialize(new { metric, series });
     }
+
+    public Task<string> LedgerReconciliationAsync(CancellationToken cancellationToken) =>
+        GetJsonAsync(Wallet, "reconciliation/latest", cancellationToken);
+
+    public Task<string> ProviderReconciliationAsync(string providerId, CancellationToken cancellationToken) =>
+        GetJsonAsync(Casino, $"admin/casino/reconciliation?providerId={Uri.EscapeDataString(providerId)}&limit=5", cancellationToken);
 
     private async Task<string> GetJsonAsync(string client, string path, CancellationToken cancellationToken)
     {
