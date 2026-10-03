@@ -1,22 +1,9 @@
-using SwiftBets.Steward.Application.Model;
 using SwiftBets.Steward.Application.Ports;
 using SwiftBets.Steward.Domain.Incidents;
 using SwiftBets.Steward.Domain.Remediation;
 using SwiftBets.Steward.Domain.Reports;
 
-namespace SwiftBets.Steward.Application.Tests;
-
-internal sealed class ScriptedModel(params IReadOnlyList<ModelBlock>[] turns) : ILanguageModel
-{
-    public int Calls { get; private set; }
-
-    public Task<ModelTurn> CompleteAsync(ModelRequest request, CancellationToken cancellationToken)
-    {
-        var blocks = turns[Math.Min(Calls, turns.Length - 1)];
-        Calls++;
-        return Task.FromResult(new ModelTurn("claude-sonnet-5-5", blocks, "tool_use", new ModelUsage(1_000, 200, 0, 0)));
-    }
-}
+namespace SwiftBets.Steward.Infrastructure.Tests;
 
 internal sealed class MemoryIncidents : IIncidentStore
 {
@@ -75,38 +62,3 @@ internal sealed class MemoryIncidents : IIncidentStore
     public Task AuditAsync(Guid incidentId, Guid? actionId, string actor, string what, string detailJson, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
-internal sealed class FixedPlatform : IPlatformInspector
-{
-    public IReadOnlyList<string> Metrics => ["payout_retries_last_minute"];
-
-    public Task<string> CouponStateAsync(Guid couponId, CancellationToken cancellationToken) =>
-        Task.FromResult($$"""{"couponId":"{{couponId}}","settlement":{"legCount":2,"settlementPending":true,"redisResolvedLegs":0},"payout":null}""");
-
-    public Task<string> MetricAsync(string metric, CancellationToken cancellationToken) => Task.FromResult("""{"series":[]}""");
-
-    public Task<string> LedgerReconciliationAsync(CancellationToken cancellationToken) => Task.FromResult("""{"isClean":true,"drifts":[]}""");
-
-    public Task<string> ProviderReconciliationAsync(string providerId, CancellationToken cancellationToken) => Task.FromResult("[]");
-}
-
-internal sealed class NoEvents : IEventLog
-{
-    public Task AppendAsync(RecentEvent recentEvent, CancellationToken cancellationToken) => Task.CompletedTask;
-
-    public Task<IReadOnlyList<RecentEvent>> RecentAsync(string subject, int limit, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<RecentEvent>>([]);
-
-    public Task<bool> SeenWithDifferentIdAsync(string eventType, string key, string discriminator, Guid eventId, CancellationToken cancellationToken) => Task.FromResult(false);
-}
-
-internal sealed class OneRunbook : IRunbookSearch
-{
-    public Task<IReadOnlyList<RunbookHit>> SearchAsync(string query, int limit, CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<RunbookHit>>([new("stuck-coupon", "Stuck coupon", ["Diagnosis"], ["Symptoms", "Diagnosis", "Remediation"], "# Stuck coupon", 0.03)]);
-}
-
-internal sealed class Budget(decimal spent) : ISpendLedger
-{
-    public Task<decimal> MonthToDateUsdAsync(CancellationToken cancellationToken) => Task.FromResult(spent);
-
-    public Task RecordAsync(Guid incidentId, string model, ModelUsage usage, decimal costUsd, CancellationToken cancellationToken) => Task.CompletedTask;
-}

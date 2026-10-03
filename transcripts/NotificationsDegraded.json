@@ -1,0 +1,59 @@
+{
+  "scenario": "NotificationsDegraded",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_service_metrics",
+          "inputJson": "{\"metric\": \"notifications_by_status_last_15m\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"notifications rejected not sending template\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"Notifications are not being delivered\", \"severity\": \"medium\", \"root_cause\": \"A template or the email provider is failing.\", \"hypothesis\": \"Customers can re-request expired links once the sender is fixed; replaying is not safe.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"Deliveries are failing for a template.\", \"excerpt\": \"\\\"value\\\":\\\"1\\\"\"}], \"runbook_citations\": [{\"runbook_id\": \"notifications-rejected\", \"section\": \"Remediation\"}], \"proposed_actions\": [{\"type\": \"no_action\", \"target\": \"{{subject}}\", \"rationale\": \"As the runbook's remediation directs.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}

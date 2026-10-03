@@ -43,6 +43,20 @@ public sealed class HostTests : IClassFixture<HostTests.Factory>
         body.ShouldContain("process_cpu_seconds_total");
     }
 
+    [Fact]
+    public async Task Alertmanager_without_the_shared_token_is_refused()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri("/alerts/alertmanager", UriKind.Relative))
+        {
+            Content = new StringContent("""{"status":"firing","alerts":[{"status":"firing","labels":{"alertname":"WalletLedgerDrift"}}]}""", System.Text.Encoding.UTF8, "application/json"),
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "wrong");
+
+        using var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
     public sealed class Factory : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -51,6 +65,7 @@ public sealed class HostTests : IClassFixture<HostTests.Factory>
         builder.UseSetting("Kafka:BootstrapServers", "127.0.0.1:1");
             builder.UseSetting("Jwt:Authority", "https://identity.test");
             builder.UseSetting("Steward:RunDetectors", "false");
+            builder.UseSetting("Steward:AlertWebhookToken", "alert-token");
             builder.UseSetting("Steward:ModelProvider:Provider", "disabled");
             builder.UseSetting("ServiceIdentity:TokenEndpoint", "http://127.0.0.1:1/auth/token");
             builder.UseSetting("ServiceIdentity:ClientSecret", "unused");

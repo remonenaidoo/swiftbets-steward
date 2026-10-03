@@ -15,4 +15,10 @@ public sealed class PlatformOptions
     [Required][Url] public string WalletAddress { get; set; } = string.Empty;
 
     [Required][Url] public string PrometheusAddress { get; set; } = string.Empty;
+
+    [Url] public string CasinoAddress { get; set; } = "http://casino:8080";
+
+    [Url] public string PaymentsAddress { get; set; } = "http://payments:8080";
+
+    [Url] public string ConfigAddress { get; set; } = "http://config:8080";
 }

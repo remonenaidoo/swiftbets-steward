@@ -21,6 +21,7 @@ title: Wallet unavailable (payouts retrying on the ladder)
 ## Remediation
 - Restore the wallet (restart it, or disarm the `wallet.unavailable` fault). Propose `no_action` for payouts: do not replay or re-credit manually while the ladder still holds the attempts, because manual credits would bypass the keys.
 - If attempts reached the dead-letter (outage longer than the ladder), propose `replay_dead_letter` for each parked coupon once the wallet is healthy.
+- If many payouts were parked, propose one `redrive_payouts` with target `all` instead, once the wallet is healthy: it puts every parked payout back on the ladder.
 
 ## Verification
 - Ladder retry rate falls to zero; payments catch up; owed equals paid for the affected coupons.

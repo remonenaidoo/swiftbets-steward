@@ -24,7 +24,7 @@ title: Wallet ledger drift (a balance or posting disagrees with the ledger)
 - **Stale or failing runs:** the reconciler cannot reach the database, a check timed out (600 s per check), or the worker is disabled (`Reconciliation:Enabled=false`). Check the wallet's readiness and logs.
 
 ## Remediation
-- There is no automated remediation, and Steward must not propose one. Money is involved and a person decides which side is wrong.
+- Propose `engage_kill_switch` with target `placement`: it stops new bets, so no stake or payout lands on a balance that may be wrong, until a person approves and later lifts it in Settings. Propose nothing else: money is involved and a person decides which side is wrong.
 - Freeze the affected account first: blacklist it (`PUT /accounts/{id}/blacklist`) so no credit lands on a wrong balance while it is investigated.
 - If the ledger is right and the balance is wrong, correct the balance projection to the ledger sum, in one audited change approved by a second operator.
 - If the ledger is wrong (a missing or one-sided posting), add a correcting balanced posting with a reference to the incident; never edit or delete existing entries, which are append-only.

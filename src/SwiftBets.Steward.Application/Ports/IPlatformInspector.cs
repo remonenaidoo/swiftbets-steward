@@ -8,4 +8,10 @@ public interface IPlatformInspector
     Task<string> MetricAsync(string metric, CancellationToken cancellationToken);
 
     IReadOnlyList<string> Metrics { get; }
+
+    /// <summary>The wallet's latest ledger reconciliation run, as the wallet serves it.</summary>
+    Task<string> LedgerReconciliationAsync(CancellationToken cancellationToken);
+
+    /// <summary>The casino's recent reconciliation runs with one provider, as the casino serves them.</summary>
+    Task<string> ProviderReconciliationAsync(string providerId, CancellationToken cancellationToken);
 }

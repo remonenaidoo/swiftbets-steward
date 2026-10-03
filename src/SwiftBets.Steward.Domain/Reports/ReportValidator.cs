@@ -72,6 +72,9 @@ public static class ReportValidator
         "refresh_coupon" => ActionType.RefreshCoupon,
         "suspend_market" => ActionType.SuspendMarket,
         "replay_dead_letter" => ActionType.ReplayDeadLetter,
+        "engage_kill_switch" => ActionType.EngageKillSwitch,
+        "replay_payment_webhooks" => ActionType.ReplayPaymentWebhooks,
+        "redrive_payouts" => ActionType.RedrivePayouts,
         _ => null,
     };
 

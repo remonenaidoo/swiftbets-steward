@@ -1,0 +1,77 @@
+{
+  "scenario": "PaymentDrift",
+  "turns": [
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_01",
+          "toolName": "get_service_metrics",
+          "inputJson": "{\"metric\": \"payments_webhooks_rejected_last_15m\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_02",
+          "toolName": "get_customer_impact",
+          "inputJson": "{\"subject\": \"{{subject}}\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_03",
+          "toolName": "search_runbooks",
+          "inputJson": "{\"query\": \"payments reconciliation drift provider and ledger disagree\"}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    },
+    {
+      "model": "replay",
+      "blocks": [
+        {
+          "kind": "ToolUse",
+          "toolUseId": "toolu_04",
+          "toolName": "submit_report",
+          "inputJson": "{\"summary\": \"The payment provider and the ledger disagree\", \"severity\": \"high\", \"root_cause\": \"A settled movement is missing on one side.\", \"hypothesis\": \"Money is involved; a person decides which side is wrong, so nothing is automated.\", \"confidence\": 0.8, \"evidence\": [{\"tool_call_id\": \"toolu_01\", \"claim\": \"Webhooks were refused recently.\", \"excerpt\": \"\\\"value\\\":\\\"1\\\"\"}, {\"tool_call_id\": \"toolu_02\", \"claim\": \"Customers are involved.\", \"excerpt\": \"\\\"customers_affected\\\":2\"}], \"runbook_citations\": [{\"runbook_id\": \"payment-drift\", \"section\": \"Remediation\"}], \"proposed_actions\": [{\"type\": \"no_action\", \"target\": \"{{subject}}\", \"rationale\": \"As the runbook's remediation directs.\"}]}"
+        }
+      ],
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0
+      }
+    }
+  ]
+}

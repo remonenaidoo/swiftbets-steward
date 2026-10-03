@@ -7,4 +7,8 @@ public enum IncidentKind
     PoisonMessage,
     DuplicateSettlement,
     PaymentDrift,
+    LedgerDrift,
+    PaymentsDegraded,
+    NotificationsDegraded,
+    ProviderDrift,
 }

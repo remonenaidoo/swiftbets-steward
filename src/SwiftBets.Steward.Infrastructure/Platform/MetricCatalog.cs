@@ -12,5 +12,9 @@ public static class MetricCatalog
         ["outbox_pending"] = "sum by (service) (swiftbets_outbox_pending)",
         ["placement_p99_seconds"] = "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{service=\"placement\",endpoint=\"/coupons\"}[5m])))",
         ["services_up"] = "up{job=\"swiftbets\"}",
+        ["payments_webhooks_rejected_last_15m"] = "sum by (provider) (increase(swiftbets_payments_webhooks_rejected_total[15m]))",
+        ["payments_sweep_failures_last_30m"] = "sum(increase(swiftbets_payments_sweep_failures_total[30m]))",
+        ["wallet_ledger_drifts"] = "max by (kind) (swiftbets_wallet_reconciliation_drifts)",
+        ["notifications_by_status_last_15m"] = "sum by (template, status) (increase(swiftbets_notifications_deliveries_total[15m]))",
     };
 }
